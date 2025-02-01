@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: distributed-ml-deployment
+  labels:
+    app: distributed-ml
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: distributed-ml
+  template:
+    metadata:
+      labels:
+        app: distributed-ml
+    spec:
+      containers:
+      - name: distributed-ml-app
+        image: distributed-ml-app:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 2
+            memory: 2Gi
+        env:
+        - name: MPI_NODES
+          value: "3"
+        - name: LOG_LEVEL
+          value: "INFO"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: distributed-ml-service
+spec:
+  selector:
+    app: distributed-ml
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: LoadBalancer

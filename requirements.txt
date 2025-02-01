@@ -1,0 +1,6 @@
+cmake>=3.15
+openmpi>=4.0.3
+opencv>=4.5.0
+eigen>=3.4.0
+cpprestsdk>=2.10.16
+nlohmann-json>=3.10.5

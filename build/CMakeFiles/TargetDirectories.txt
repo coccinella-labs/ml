@@ -1,0 +1,8 @@
+/Users/niladridas/Documents/kuber/distributed_ml/build/CMakeFiles/distributed_ml_app.dir
+/Users/niladridas/Documents/kuber/distributed_ml/build/CMakeFiles/test.dir
+/Users/niladridas/Documents/kuber/distributed_ml/build/CMakeFiles/edit_cache.dir
+/Users/niladridas/Documents/kuber/distributed_ml/build/CMakeFiles/rebuild_cache.dir
+/Users/niladridas/Documents/kuber/distributed_ml/build/CMakeFiles/list_install_components.dir
+/Users/niladridas/Documents/kuber/distributed_ml/build/CMakeFiles/install.dir
+/Users/niladridas/Documents/kuber/distributed_ml/build/CMakeFiles/install/local.dir
+/Users/niladridas/Documents/kuber/distributed_ml/build/CMakeFiles/install/strip.dir
