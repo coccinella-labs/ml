@@ -10,3 +10,6 @@ spec:
     - port: {{ .Values.service.port }}
       targetPort: 8080
   type: {{ .Values.service.type }}
+
+# TODO: Improve resource management
+# TODO: Implement more scalable architecture

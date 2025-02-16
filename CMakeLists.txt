@@ -80,3 +80,6 @@ enable_testing()
 
 # Install
 install(TARGETS distributed_ml_app DESTINATION bin)
+
+# TODO: Improve dependency management
+# TODO: Refactor code to be more modular

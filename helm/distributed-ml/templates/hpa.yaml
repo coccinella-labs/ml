@@ -20,3 +20,6 @@ spec:
       name: memory
       targetAverageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
 {{- end }}
+
+# TODO: Improve resource management
+# TODO: Implement more scalable architecture

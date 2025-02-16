@@ -82,5 +82,10 @@ Open `http://localhost:8080` in your browser
 kubectl logs -l app=distributed-ml
 ```
 
+## Planned Improvements
+- Better error handling
+- More unit tests
+- Performance optimizations
+
 ## License
 MIT License

@@ -304,4 +304,7 @@ nlohmann::json DistributedTrainer::getPerformanceMetrics() const {
     return metrics;
 }
 
+// TODO: Improve error handling
+// TODO: Implement more efficient data distribution
+
 } // namespace DistributedML
