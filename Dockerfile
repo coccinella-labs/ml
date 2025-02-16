@@ -27,6 +27,9 @@ RUN mkdir build && cd build && \
     cmake .. && \
     make
 
+# TODO: Implement multi-stage builds for better efficiency
+# TODO: Optimize the build process to reduce image size
+
 # Final stage
 FROM ubuntu:20.04
 

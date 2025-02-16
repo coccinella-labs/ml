@@ -35,3 +35,5 @@ spec:
           value: {{ .Values.environment.logLevel }}
         - name: MPI_NODES
           value: {{ .Values.environment.mpiNodes | quote }}
+# TODO: Improve resource management
+# TODO: Implement more scalable architecture

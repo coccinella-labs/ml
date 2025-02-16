@@ -31,6 +31,8 @@ spec:
           value: "3"
         - name: LOG_LEVEL
           value: "INFO"
+# TODO: Improve resource management
+# TODO: Implement more scalable architecture
 ---
 apiVersion: v1
 kind: Service

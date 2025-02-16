@@ -82,3 +82,6 @@ int main(int argc, char** argv) {
 
     return 0;
 }
+
+// TODO: Improve error handling
+// TODO: Refactor code to be more modular
