@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Distributed ML: Purpose & Explanation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #004080;
+      --secondary-color: #003366;
+      --background-light: #f0f4f8;
+      --text-color: #333;
+      --white: #ffffff;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background-color: var(--background-light);
+      color: var(--text-color);
+      line-height: 1.6;
+      position: relative;
+      overscroll-behavior-y: contain;
+    }
+    .background-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+    }
+    .background-blur {
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      width: 120%;
+      height: 120%;
+      background: 
+        linear-gradient(135deg, rgba(0,64,128,0.05) 0%, rgba(0,64,128,0.15) 100%),
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="blur"><feGaussianBlur stdDeviation="15" /></filter><rect width="100" height="100" filter="url(%23blur)" fill="rgba(0,64,128,0.05)" /></svg>');
+      background-size: cover, 200px 200px;
+      filter: blur(20px);
+      transform: scale(1.2);
+      animation: subtle-movement 20s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+    @keyframes subtle-movement {
+      0% { transform: scale(1.15) translateX(-3%) translateY(-3%); }
+      100% { transform: scale(1.2) translateX(3%) translateY(3%); }
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+      min-height: 100vh;
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background-color: var(--primary-color);
+      color: var(--white);
+      padding: 25px;
+      text-align: center;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      box-shadow: 0 8px 20px rgba(0,64,128,0.2);
+    }
+    main {
+      flex: 1;
+      padding: 0 30px;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    h1, h2 {
+      color: var(--primary-color);
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 2.5em;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+    h2 {
+      font-size: 1.8em;
+      border-bottom: 3px solid var(--primary-color);
+      padding-bottom: 15px;
+      font-weight: 600;
+    }
+    p {
+      margin-bottom: 20px;
+      font-weight: 300;
+    }
+    a {
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    a:hover {
+      color: var(--secondary-color);
+      text-decoration: underline;
+    }
+    ul {
+      margin: 0 0 20px 40px;
+    }
+    li {
+      margin-bottom: 15px;
+      font-weight: 300;
+    }
+    .read-aloud-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 30px;
+    }
+    #read-aloud-btn {
+      background-color: var(--primary-color);
+      color: var(--white);
+      padding: 15px 30px;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-size: 1.1em;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 6px 15px rgba(0,64,128,0.2);
+    }
+    #read-aloud-btn:hover {
+      background-color: var(--secondary-color);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,64,128,0.3);
+    }
+    #read-aloud-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 4px 10px rgba(0,64,128,0.2);
+    }
+    #voice-status {
+      margin-top: 15px;
+      color: var(--primary-color);
+      font-weight: 300;
+      text-align: center;
+    }
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+        border-radius: 0;
+      }
+      main {
+        padding: 0 15px;
+      }
+      h1 {
+        font-size: 2em;
+      }
+      h2 {
+        font-size: 1.5em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="background-wrapper">
+    <div class="background-blur"></div>
+  </div>
+  <div class="container">
+    <header>
+      <h1>Distributed ML Framework</h1>
+    </header>
+    <main>
+      <section id="explanation">
+        <h2>About the Project</h2>
+        <p>
+          This project is hosted on <a href="https://github.com/bniladridas/distributed_ml" target="_blank">GitHub</a> and provides a high-performance distributed machine learning framework. It leverages the Message Passing Interface (MPI) to train models in parallel across multiple computing nodes, significantly reducing processing time and efficiently handling large datasets.
+        </p>
+        <p>
+          The framework is engineered to meet the strict performance and regulatory standards demanded by big tech companies, financial institutions, and government bodies. With an emphasis on transparency, robust performance metrics, and real-time task monitoring, it is designed to ensure both efficiency and compliance.
+        </p>
+      </section>
+      <section id="why">
+        <h2>Why It Was Made</h2>
+        <p>
+          The creation of this distributed machine learning framework was driven by the need to overcome the limitations of single-node processing:
+        </p>
+        <ul>
+          <li><strong>Scalability:</strong> As data and model complexity increase, the need to distribute the computational load becomes essential.</li>
+          <li><strong>Efficiency:</strong> Parallel processing reduces training times, making it feasible to handle large-scale machine learning tasks.</li>
+          <li><strong>Regulatory Compliance:</strong> Designed to adhere to stringent financial and governmental standards, ensuring security, transparency, and fraud prevention.</li>
+          <li><strong>Collaboration:</strong> Provides a platform where developers and researchers can work together, share insights, and innovate without compromising on quality or safety.</li>
+        </ul>
+        <p>
+          Overall, the project reflects a commitment to delivering technology that not only pushes the boundaries of machine learning but also upholds the highest ethical and regulatory standards.
+        </p>
+      </section>
+      <div class="read-aloud-container">
+        <button id="read-aloud-btn">Read Aloud</button>
+        <div id="voice-status"></div>
+      </div>
+    </main>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const readAloudBtn = document.getElementById('read-aloud-btn');
+      const voiceStatus = document.getElementById('voice-status');
+      let isSpeaking = false;
+
+      // Cross-browser speech synthesis support
+      const speechSynth = window.speechSynthesis;
+      let utterance = null;
+
+      function getSupportedVoices() {
+        return speechSynth.getVoices().filter(voice => 
+          voice.lang.startsWith('en-') || voice.lang === 'en'
+        );
+      }
+
+      function readContent() {
+        // Stop if already speaking
+        if (isSpeaking) {
+          speechSynth.cancel();
+          isSpeaking = false;
+          readAloudBtn.textContent = 'Read Aloud';
+          voiceStatus.textContent = '';
+          return;
+        }
+
+        // Get main content
+        const mainContent = document.querySelector('main').innerText;
+        
+        // Create new utterance
+        utterance = new SpeechSynthesisUtterance(mainContent);
+        
+        // Select voice (prefer natural-sounding English voices)
+        const voices = getSupportedVoices();
+        if (voices.length > 0) {
+          // Try to find a natural-sounding voice
+          const naturalVoice = voices.find(v => 
+            v.name.includes('Google') || 
+            v.name.includes('Microsoft') || 
+            v.name.includes('Natural')
+          ) || voices[0];
+          
+          utterance.voice = naturalVoice;
+        }
+
+        // Configure utterance
+        utterance.rate = 0.9;  // Slightly slower for better comprehension
+        utterance.pitch = 1;
+
+        // Event listeners for speech status
+        utterance.onstart = () => {
+          isSpeaking = true;
+          readAloudBtn.textContent = 'Stop Reading';
+          voiceStatus.textContent = 'Reading content...';
+        };
+
+        utterance.onend = () => {
+          isSpeaking = false;
+          readAloudBtn.textContent = 'Read Aloud';
+          voiceStatus.textContent = 'Reading completed.';
+          
+          // Clear status after 3 seconds
+          setTimeout(() => {
+            voiceStatus.textContent = '';
+          }, 3000);
+        };
+
+        utterance.onerror = (event) => {
+          console.error('Speech synthesis error:', event);
+          voiceStatus.textContent = 'Speech not supported or an error occurred.';
+          isSpeaking = false;
+          readAloudBtn.textContent = 'Read Aloud';
+        };
+
+        // Speak the content
+        speechSynth.speak(utterance);
+      }
+
+      // Ensure voices are loaded
+      speechSynth.onvoiceschanged = () => {
+        const voices = getSupportedVoices();
+        if (voices.length > 0) {
+          readAloudBtn.disabled = false;
+        }
+      };
+
+      // Attach event listener
+      readAloudBtn.addEventListener('click', readContent);
+
+      // Initial voice check
+      const voices = getSupportedVoices();
+      if (voices.length === 0) {
+        voiceStatus.textContent = 'Text-to-speech not supported in this browser.';
+        readAloudBtn.disabled = true;
+      }
+    });
+  </script>
+</body>
+</html>
