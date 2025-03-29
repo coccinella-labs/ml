@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "High-performance distributed machine learning framework"
+version: 1.0.0
+authors:
+  - name: "Niladri Das"
+    orcid: "https://orcid.org/0009-0002-6619-5691"
+    affiliation: "NVIDIA Developer Program"
+date-released: 2025-03-29
+repository-code: "https://github.com/bniladridas/distributed_ml"
+keywords:
+  - distributed machine learning
+  - MPI
+  - parallel training
+  - NVIDIA Developer Program
+license: "MIT"
