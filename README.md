@@ -37,7 +37,7 @@ Access the dashboard at `http://localhost:8080`
 This project follows conventional commit standards to maintain a clean and consistent git history.
 
 ### Commit Message Format
-- First line must be lowercase and ≤60 characters
+- First line must be lowercase and ≤30 characters
 - Must start with a valid type followed by `:`
 - Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`, `revert`
 
