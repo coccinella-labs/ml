@@ -32,6 +32,31 @@ Access the dashboard at `http://localhost:8080`
 - Performance Metrics Tracking
 - Web-based Dashboard
 
+## Conventional Commits
+
+This project follows conventional commit standards to maintain a clean and consistent git history.
+
+### Commit Message Format
+- First line must be lowercase and ≤60 characters
+- Must start with a valid type followed by `:`
+- Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`, `revert`
+
+Example: `feat: add distributed training support`
+
+### Setup
+1. Copy the commit-msg hook to enable enforcement:
+   ```bash
+   cp scripts/commit-msg .git/hooks/commit-msg
+   chmod +x .git/hooks/commit-msg
+   ```
+
+### Rewriting History
+To clean up existing commit messages (make lowercase and truncate):
+```bash
+./scripts/rewrite_msg.sh
+git push --force --all
+```
+
 ## Architecture
 - Distributed Trainer: Manages distributed machine learning tasks
 - Task Manager: Tracks and manages individual tasks

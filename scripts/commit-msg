@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Conventional Commit Message Hook
+# Enforces lowercase first line, ≤60 characters, starting with valid type
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(head -n1 "$COMMIT_MSG_FILE")
+
+# Valid commit types
+VALID_TYPES="feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert"
+
+# Check if first line starts with valid type followed by :
+if ! echo "$COMMIT_MSG" | grep -qE "^($VALID_TYPES):"; then
+    echo "Error: Commit message must start with a valid type: $VALID_TYPES"
+    exit 1
+fi
+
+# Check if first line is lowercase
+if [[ "$COMMIT_MSG" != "$(echo "$COMMIT_MSG" | tr '[:upper:]' '[:lower:]')" ]]; then
+    echo "Error: Commit message first line must be lowercase"
+    exit 1
+fi
+
+# Check length ≤60 characters
+if [[ ${#COMMIT_MSG} -gt 60 ]]; then
+    echo "Error: Commit message first line must be ≤60 characters (current: ${#COMMIT_MSG})"
+    exit 1
+fi
+
+exit 0
