@@ -8,7 +8,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential cmake git ca-certificates wget python3 \
     libopenmpi-dev libeigen3-dev libcpprest-dev libboost-all-dev \
-    nlohmann-json3-dev libssl-dev pkg-config \
+    nlohmann-json3-dev libssl-dev libgtest-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . /app
@@ -30,4 +30,4 @@ EXPOSE 8080
 ENTRYPOINT ["distributed_ml"]
 
 LABEL org.opencontainers.image.source="https://github.com/bniladridas/ml" \
-      org.opencontainers.image.description="Distributed ML framework (ARM64 optimized)"
+      org.opencontainers.image.description="high-performance mpi ml framework (arm64 optimized)"

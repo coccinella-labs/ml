@@ -57,9 +57,20 @@ target_compile_definitions(distributed_ml PRIVATE BOOST_LOG_DYN_LINK)
 enable_testing()
 file(GLOB TEST_SOURCES "tests/*.cpp")
 if(TEST_SOURCES)
-    add_executable(unit_tests ${TEST_SOURCES} src/distributed_trainer.cpp src/task_manager.cpp src/performance_tracker.cpp)
+    add_executable(unit_tests
+        ${TEST_SOURCES}
+        src/distributed_trainer.cpp
+        src/task_manager.cpp
+        src/performance_tracker.cpp)
     target_link_libraries(unit_tests
-        ${MPI_LIBRARIES} Eigen3::Eigen cpprestsdk::cpprest nlohmann_json::nlohmann_json ${Boost_LIBRARIES} GTest::gtest_main OpenSSL::SSL OpenSSL::Crypto)
+        ${MPI_LIBRARIES}
+        Eigen3::Eigen
+        cpprestsdk::cpprest
+        nlohmann_json::nlohmann_json
+        ${Boost_LIBRARIES}
+        GTest::gtest_main
+        OpenSSL::SSL
+        OpenSSL::Crypto)
     target_include_directories(unit_tests PRIVATE include)
     add_test(NAME unit_tests COMMAND unit_tests)
 endif()
