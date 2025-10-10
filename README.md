@@ -1,5 +1,7 @@
 ## distributed ml framework
 
+repository: https://github.com/bniladridas/distributed_ml
+
 * [x] c++17 distributed training
 * [x] real-time performance and task monitoring
 * [x] web dashboard — `http://localhost:8080`
