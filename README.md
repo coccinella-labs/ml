@@ -120,4 +120,4 @@ kubectl logs -l app=distributed-ml
 
 ## license
 
-mit
+apache 2.0
