@@ -24,6 +24,7 @@ find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(cpprestsdk REQUIRED)
 find_package(nlohmann_json REQUIRED)
+cmake_policy(SET CMP0167 NEW)
 find_package(Boost REQUIRED COMPONENTS
     system
     thread
