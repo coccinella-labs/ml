@@ -47,7 +47,7 @@ set(SOURCES
     src/distributed_trainer.cpp
     src/task_manager.cpp
     src/performance_tracker.cpp
-    dashboard/dashboard_server.cpp
+    src/dashboard_server.cpp
     src/main.cpp
 )
 
