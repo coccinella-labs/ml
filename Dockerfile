@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
     build-essential cmake libopenmpi-dev \
-    libeigen3-dev libcpprest-dev libboost-all-dev nlohmann-json3-dev libgtest-dev git wget \
+    libeigen3-dev libcpprest-dev libboost-all-dev nlohmann-json3-dev libgtest-dev libssl-dev git wget \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
