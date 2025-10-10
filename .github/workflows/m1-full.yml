@@ -52,7 +52,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y clang-tidy build-essential libopenmpi-dev libeigen3-dev \
-            libcpprest-dev nlohmann-json3-dev libboost-all-dev libgtest-dev
+            libcpprest-dev nlohmann-json3-dev libboost-all-dev libgtest-dev python3-pip
+          python3 -m pip install cmakelint
 
       - name: Configure (for compilation database)
         run: |
