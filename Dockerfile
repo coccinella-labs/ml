@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
     libopenmpi3 libeigen3-dev libcpprest2.10 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/build/distributed_ml_app /usr/local/bin/
+COPY --from=builder /app/build/distributed_ml /usr/local/bin/
 
 EXPOSE 8080
-CMD ["distributed_ml_app"]
+CMD ["distributed_ml"]

@@ -50,7 +50,7 @@ set(SOURCES
 )
 
 # Executable
-add_executable(distributed_ml_app ${SOURCES})
+add_executable(distributed_ml ${SOURCES})
 
 # Link libraries
 target_link_libraries(distributed_ml_app
