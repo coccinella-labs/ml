@@ -5,13 +5,22 @@
 * [x] web dashboard — `http://localhost:8080`
 * [x] simple build: `cmake .. && make`
 * [x] run: `mpirun -n <num_processes> ./distributed_ml_app`
-* [x] kubernetes-ready (docker)
+* [x] kubernetes-ready (docker, helm, autoscaling)
 * [x] ci/cd on github actions (macos m1)
 * [x] apache 2.0 license
 
-### example (docker)
+### docker (arm64)
 
-```cpp
+building docker image for arm64 — this will take several minutes.
+once done, run:
+
+```bash
+docker run -p 8080:8080 distributed-ml:latest
+```
+
+### example (local run)
+
+```
 $ cd build && mpirun -np 1 ./distributed_ml_app
 [info] mpi initialized successfully
 [info] configuration set: lr=0.01, epochs=100, batchsize=32
@@ -36,4 +45,3 @@ training metrics: {
     "world_size": 1
 }
 ```
-
