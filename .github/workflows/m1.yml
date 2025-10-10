@@ -54,7 +54,10 @@ jobs:
         run: cmakelint CMakeLists.txt
 
       - name: Install cpp-lint dependencies
-        run: sudo apt-get update && sudo apt-get install -y clang-tidy libopenmpi-dev libeigen3-dev libcpprest-dev nlohmann-json3-dev libboost-all-dev libgtest-dev
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy cmake libopenmpi-dev libeigen3-dev libcpprest-dev nlohmann-json3-dev libboost-all-dev libgtest-dev libssl-dev
+
+      - name: Configure for lint
+        run: cmake -B build -S .
 
       - name: Lint C++
         run: find src include tests -name "*.cpp" -o -name "*.h" -print0 | xargs -0 clang-tidy --warnings-as-errors=* -p build
