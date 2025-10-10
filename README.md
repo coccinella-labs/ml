@@ -5,13 +5,25 @@
 * [x] web dashboard — `http://localhost:8080`
 * [x] simple build: `cmake .. && make`
 * [x] run: `mpirun -n <num_processes> ./distributed_ml_app`
-* [x] kubernetes-ready (docker, helm, autoscaling)
+* [x] kubernetes-ready (docker)
 * [x] ci/cd on github actions (macos m1)
 * [x] apache 2.0 license
 
-### example output
+### example (docker)
 
-```
+```cpp
+$ cd build && mpirun -np 1 ./distributed_ml_app
+[info] mpi initialized successfully
+[info] configuration set: lr=0.01, epochs=100, batchsize=32
+[info] distributed trainer initialized. rank: 0, world size: 1
+[info] node 0 received 1000 training samples
+[info] model parameters synchronized
+[info] epoch 1/100 - global loss: 31.7566, gradient norm: 1.02059
+[info] epoch 2/100 - global loss: 31.7566, gradient norm: 1.02059
+[info] epoch 3/100 - global loss: 31.7566, gradient norm: 1.02059
+[info] epoch 4/100 - global loss: 31.7566, gradient norm: 1.02059
+[info] early stopping triggered
+[info] distributed training completed
 dashboard server listening on: http://localhost:8080/
 [info] results aggregated from node 0
 training metrics: {
@@ -24,3 +36,4 @@ training metrics: {
     "world_size": 1
 }
 ```
+
