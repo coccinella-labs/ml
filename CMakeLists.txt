@@ -24,13 +24,14 @@ find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(cpprestsdk REQUIRED)
 find_package(nlohmann_json REQUIRED)
-find_package(Boost REQUIRED COMPONENTS 
-    system 
-    thread 
-    filesystem 
-    log 
+find_package(Boost REQUIRED COMPONENTS
+    system
+    thread
+    filesystem
+    log
     log_setup
 )
+find_package(GTest REQUIRED)
 
 # Include directories
 include_directories(
@@ -77,6 +78,23 @@ target_compile_definitions(distributed_ml_app PRIVATE
 
 # Enable testing
 enable_testing()
+
+# Unit tests
+file(GLOB TEST_SOURCES "tests/*.cpp")
+if(TEST_SOURCES)
+    add_executable(unit_tests ${TEST_SOURCES})
+    target_link_libraries(unit_tests
+        ${MPI_LIBRARIES}
+        ${OpenCV_LIBS}
+        Eigen3::Eigen
+        cpprestsdk::cpprest
+        nlohmann_json::nlohmann_json
+        ${Boost_LIBRARIES}
+        GTest::gtest_main
+    )
+    target_include_directories(unit_tests PRIVATE include)
+    add_test(NAME unit_tests COMMAND unit_tests)
+endif()
 
 # Install
 install(TARGETS distributed_ml_app DESTINATION bin)

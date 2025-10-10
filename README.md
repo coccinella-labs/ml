@@ -21,6 +21,13 @@ cmake ..
 make
 ```
 
+## test
+
+```bash
+make unit_tests
+ctest
+```
+
 ## run
 
 ```bash
