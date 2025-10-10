@@ -3,6 +3,9 @@
 #include <thread>
 #include <stdexcept>
 #include <iostream>
+#include <opencv2/opencv.hpp>
+#include <Eigen/Dense>
+#include <nlohmann/json.hpp>
 
 // Function to generate sample training data
 std::vector<cv::Mat> generateTrainingData(int numSamples) {
@@ -29,6 +32,19 @@ int main(int argc, char** argv) {
         // Distribute data across nodes
         trainer.distributeData(trainingData);
 
+        // Create dashboard server
+        auto dashboard = std::make_shared<DistributedML::DashboardServer>("http://localhost:8080");
+
+        // Start dashboard server with error handling
+        std::exception_ptr dashboardException = nullptr;
+        std::thread dashboardThread([dashboard, &dashboardException]() {
+            try {
+                dashboard->start();
+            } catch (...) {
+                dashboardException = std::current_exception();
+            }
+        });
+
         // Start training in a separate thread with error handling
         std::exception_ptr trainingException = nullptr;
         std::thread trainingThread([&trainer, &trainingException]() {
@@ -36,17 +52,6 @@ int main(int argc, char** argv) {
                 trainer.train();
             } catch (...) {
                 trainingException = std::current_exception();
-            }
-        });
-
-        // Start dashboard server with error handling
-        std::exception_ptr dashboardException = nullptr;
-        std::thread dashboardThread([&dashboardException]() {
-            try {
-                DistributedML::DashboardServer dashboard("http://localhost:8080");
-                dashboard.start();
-            } catch (...) {
-                dashboardException = std::current_exception();
             }
         });
 
@@ -59,6 +64,9 @@ int main(int argc, char** argv) {
         }
 
         // Stop dashboard
+        dashboard->stop();
+
+        // Wait for dashboard thread to finish
         dashboardThread.join();
 
         // Check for dashboard exceptions
@@ -69,7 +77,7 @@ int main(int argc, char** argv) {
         // Aggregate and log results
         Eigen::MatrixXd results = trainer.aggregateResults();
         nlohmann::json metrics = trainer.getPerformanceMetrics();
-        
+
         std::cout << "Training Metrics: " << metrics.dump(4) << std::endl;
 
     } catch (const std::exception& e) {
