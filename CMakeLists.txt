@@ -20,13 +20,12 @@ list(APPEND CMAKE_PREFIX_PATH
 
 # Find required packages
 find_package(MPI REQUIRED)
-find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(cpprestsdk REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(OpenSSL REQUIRED)
 cmake_policy(SET CMP0167 NEW)
 find_package(Boost REQUIRED COMPONENTS
-    system
     thread
     filesystem
     log
@@ -37,7 +36,6 @@ find_package(GTest REQUIRED)
 # Include directories
 include_directories(
     ${MPI_INCLUDE_PATH}
-    ${OpenCV_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}
     ${Boost_INCLUDE_DIRS}
     include
@@ -56,13 +54,14 @@ set(SOURCES
 add_executable(distributed_ml_app ${SOURCES})
 
 # Link libraries
-target_link_libraries(distributed_ml_app 
+target_link_libraries(distributed_ml_app
     ${MPI_LIBRARIES}
-    ${OpenCV_LIBS}
     Eigen3::Eigen
     cpprestsdk::cpprest
     nlohmann_json::nlohmann_json
     ${Boost_LIBRARIES}
+    OpenSSL::SSL
+    OpenSSL::Crypto
 )
 
 # Compiler flags (moved after target definition)
@@ -83,15 +82,16 @@ enable_testing()
 # Unit tests
 file(GLOB TEST_SOURCES "tests/*.cpp")
 if(TEST_SOURCES)
-    add_executable(unit_tests ${TEST_SOURCES})
+    add_executable(unit_tests ${TEST_SOURCES} src/distributed_trainer.cpp src/task_manager.cpp src/performance_tracker.cpp)
     target_link_libraries(unit_tests
         ${MPI_LIBRARIES}
-        ${OpenCV_LIBS}
         Eigen3::Eigen
         cpprestsdk::cpprest
         nlohmann_json::nlohmann_json
         ${Boost_LIBRARIES}
         GTest::gtest_main
+        OpenSSL::SSL
+        OpenSSL::Crypto
     )
     target_include_directories(unit_tests PRIVATE include)
     add_test(NAME unit_tests COMMAND unit_tests)

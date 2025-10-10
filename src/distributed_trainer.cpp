@@ -4,7 +4,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include <opencv2/opencv.hpp>
 #include <Eigen/Dense>
 #include <nlohmann/json.hpp>
 #include <boost/log/core.hpp>
@@ -96,7 +95,7 @@ void DistributedTrainer::validateAndSetConfig(const TrainingConfig& config) {
                              << ", BatchSize=" << m_config.batchSize;
 }
 
-void DistributedTrainer::distributeData(const std::vector<cv::Mat>& trainingData) {
+void DistributedTrainer::distributeData(const std::vector<Eigen::MatrixXd>& trainingData) {
     if (trainingData.empty()) {
         BOOST_LOG_TRIVIAL(error) << "Attempted to distribute empty training data";
         throw std::invalid_argument("Training data is empty");
@@ -111,7 +110,7 @@ void DistributedTrainer::distributeData(const std::vector<cv::Mat>& trainingData
     int endIndex = startIndex + dataPerNode + (m_rank < remainder ? 1 : 0);
 
     // Distribute data to local node
-    m_localData = std::vector<cv::Mat>(
+    m_localData = std::vector<Eigen::MatrixXd>(
         trainingData.begin() + startIndex, 
         trainingData.begin() + endIndex
     );
@@ -143,7 +142,7 @@ void DistributedTrainer::train() {
             
             // Simulate local batch training
             Eigen::VectorXd batchGradient = processLocalBatch(
-                std::vector<cv::Mat>(m_localData.begin() + batchStart, m_localData.begin() + batchEnd)
+                std::vector<Eigen::MatrixXd>(m_localData.begin() + batchStart, m_localData.begin() + batchEnd)
             );
 
             localGradients.push_back(batchGradient);
@@ -167,7 +166,7 @@ void DistributedTrainer::train() {
     BOOST_LOG_TRIVIAL(info) << "Distributed training completed";
 }
 
-Eigen::VectorXd DistributedTrainer::processLocalBatch(const std::vector<cv::Mat>& localBatch) {
+Eigen::VectorXd DistributedTrainer::processLocalBatch(const std::vector<Eigen::MatrixXd>& localBatch) {
     // Simulate local batch processing and gradient computation
     Eigen::VectorXd localGradient(localBatch.size());
     

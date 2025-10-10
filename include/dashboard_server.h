@@ -24,3 +24,5 @@ private:
     void handleGetPerformance(web::http::http_request request);
     void handleCreateTask(web::http::http_request request);
 };
+
+} // namespace DistributedML

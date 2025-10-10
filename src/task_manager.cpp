@@ -41,13 +41,13 @@ std::vector<TaskManager::Task> TaskManager::getAllTasks() const {
     return m_tasks;
 }
 
-TaskManager::Task TaskManager::getTaskById(const std::string& taskId) const {
+std::optional<TaskManager::Task> TaskManager::getTaskById(const std::string& taskId) const {
     std::lock_guard<std::mutex> lock(m_taskMutex);
-    
-    auto it = std::find_if(m_tasks.begin(), m_tasks.end(), 
+
+    auto it = std::find_if(m_tasks.begin(), m_tasks.end(),
         [&taskId](const Task& task) { return task.id == taskId; });
-    
-    return (it != m_tasks.end()) ? *it : Task{};
+
+    return (it != m_tasks.end()) ? std::optional<Task>(*it) : std::nullopt;
 }
 
 } // namespace DistributedML

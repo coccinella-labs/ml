@@ -11,15 +11,22 @@ void PerformanceTracker::startTracking(const std::string& metricName) {
 }
 
 void PerformanceTracker::stopTracking(const std::string& metricName) {
-    auto it = std::find_if(m_metrics.begin(), m_metrics.end(), 
-        [&metricName](const PerformanceMetric& metric) { 
-            return metric.name == metricName; 
+    auto it = std::find_if(m_metrics.begin(), m_metrics.end(),
+        [&metricName](const PerformanceMetric& metric) {
+            return metric.name == metricName;
         });
 
     if (it != m_metrics.end()) {
         it->endTime = std::chrono::high_resolution_clock::now();
         it->duration = std::chrono::duration<double>(it->endTime - it->startTime).count();
     }
+}
+
+void PerformanceTracker::addMetric(const std::string& metricName, double duration) {
+    PerformanceMetric metric;
+    metric.name = metricName;
+    metric.duration = duration;
+    m_metrics.push_back(metric);
 }
 
 nlohmann::json PerformanceTracker::getMetrics() const {

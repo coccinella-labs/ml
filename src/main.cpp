@@ -3,18 +3,17 @@
 #include <thread>
 #include <stdexcept>
 #include <iostream>
-#include <opencv2/opencv.hpp>
 #include <Eigen/Dense>
 #include <nlohmann/json.hpp>
 
 // Function to generate sample training data
-std::vector<cv::Mat> generateTrainingData(int numSamples) {
-    std::vector<cv::Mat> trainingData;
+std::vector<Eigen::MatrixXd> generateTrainingData(int numSamples) {
+    std::vector<Eigen::MatrixXd> trainingData;
     
     // Generate random images for training
     for (int i = 0; i < numSamples; ++i) {
-        cv::Mat sample = cv::Mat::zeros(28, 28, CV_32F);
-        cv::randu(sample, 0, 1);
+        Eigen::MatrixXd sample = Eigen::MatrixXd::Zero(28, 28);
+        sample.setRandom();
         trainingData.push_back(sample);
     }
     
@@ -27,7 +26,7 @@ int main(int argc, char** argv) {
         DistributedML::DistributedTrainer trainer(argc, argv);
 
         // Prepare sample training data
-        std::vector<cv::Mat> trainingData = generateTrainingData(1000);
+        std::vector<Eigen::MatrixXd> trainingData = generateTrainingData(1000);
 
         // Distribute data across nodes
         trainer.distributeData(trainingData);

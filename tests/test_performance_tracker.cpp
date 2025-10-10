@@ -10,7 +10,7 @@ TEST(PerformanceTrackerTest, AddMetric) {
     auto metrics = pt.getMetrics();
     ASSERT_EQ(metrics.size(), 1);
     EXPECT_EQ(metrics[0]["name"], "test_operation");
-    EXPECT_EQ(metrics[0]["duration_ms"], 1.5);
+    EXPECT_EQ(metrics[0]["duration"], 1.5);
 }
 
 TEST(PerformanceTrackerTest, GetMetrics) {

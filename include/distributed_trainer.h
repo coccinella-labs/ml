@@ -5,7 +5,7 @@
 #include <memory>
 #include <limits>
 #include <Eigen/Dense>
-#include <opencv2/opencv.hpp>
+
 #include <nlohmann/json.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -34,7 +34,7 @@ public:
     void validateAndSetConfig(const TrainingConfig& config);
 
     // Distribute training data across nodes
-    void distributeData(const std::vector<cv::Mat>& trainingData);
+    void distributeData(const std::vector<Eigen::MatrixXd>& trainingData);
 
     // Perform distributed training
     void train();
@@ -47,7 +47,7 @@ public:
 
 private:
     // Local batch processing
-    Eigen::VectorXd processLocalBatch(const std::vector<cv::Mat>& localBatch);
+    Eigen::VectorXd processLocalBatch(const std::vector<Eigen::MatrixXd>& localBatch);
 
     // Compute local loss
     double computeLocalLoss(const Eigen::VectorXd& localGradient);
@@ -72,7 +72,7 @@ private:
     MPI_Comm m_communicator;
 
     // Local training data
-    std::vector<cv::Mat> m_localData;
+    std::vector<Eigen::MatrixXd> m_localData;
 
     // Training configuration
     TrainingConfig m_config;

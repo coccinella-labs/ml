@@ -4,6 +4,7 @@
 #include <vector>
 #include <mutex>
 #include <algorithm>
+#include <optional>
 #include <nlohmann/json.hpp>
 
 // Explicitly use global namespace for standard types
@@ -42,7 +43,7 @@ public:
     string addTask(const string& taskType, const nlohmann::json& metadata);
     void updateTaskStatus(const string& taskId, TaskStatus status);
     vector<Task> getAllTasks() const;
-    Task getTaskById(const string& taskId) const;
+    std::optional<Task> getTaskById(const string& taskId) const;
 
 private:
     mutable mutex m_taskMutex;
