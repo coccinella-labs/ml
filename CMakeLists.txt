@@ -53,7 +53,7 @@ set(SOURCES
 add_executable(distributed_ml ${SOURCES})
 
 # Link libraries
-target_link_libraries(distributed_ml_app
+target_link_libraries(distributed_ml
     ${MPI_LIBRARIES}
     Eigen3::Eigen
     cpprestsdk::cpprest
@@ -65,7 +65,7 @@ target_link_libraries(distributed_ml_app
 
 # Compiler flags (moved after target definition)
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-    set_target_properties(distributed_ml_app PROPERTIES
+    set_target_properties(distributed_ml PROPERTIES
         COMPILE_FLAGS "-Wno-deprecated-declarations -Wno-unused-parameter"
     )
 endif()
