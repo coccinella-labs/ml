@@ -21,9 +21,9 @@ if [[ "$COMMIT_MSG" != "$(echo "$COMMIT_MSG" | tr '[:upper:]' '[:lower:]')" ]]; 
     exit 1
 fi
 
-# Check length ≤60 characters
-if [[ ${#COMMIT_MSG} -gt 60 ]]; then
-    echo "Error: Commit message first line must be ≤60 characters (current: ${#COMMIT_MSG})"
+# Check length ≤30 characters
+if [[ ${#COMMIT_MSG} -gt 30 ]]; then
+    echo "Error: Commit message first line must be ≤30 characters (current: ${#COMMIT_MSG})"
     exit 1
 fi
 
