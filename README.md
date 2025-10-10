@@ -1,6 +1,6 @@
 ## distributed ml framework
 
-repository: https://github.com/bniladridas/distributed_ml
+repository: https://github.com/bniladridas/ml
 
 * [x] c++17 distributed training
 * [x] real-time performance and task monitoring
