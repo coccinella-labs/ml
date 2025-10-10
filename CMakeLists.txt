@@ -71,7 +71,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 endif()
 
 # Define preprocessor macros for Boost.Log
-target_compile_definitions(distributed_ml_app PRIVATE
+target_compile_definitions(distributed_ml PRIVATE
     BOOST_LOG_DYN_LINK
 )
 
@@ -97,7 +97,7 @@ if(TEST_SOURCES)
 endif()
 
 # Install
-install(TARGETS distributed_ml_app DESTINATION bin)
+install(TARGETS distributed_ml DESTINATION bin)
 
 # TODO: Improve dependency management
 # TODO: Refactor code to be more modular
