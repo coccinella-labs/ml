@@ -13,31 +13,64 @@ git filter-branch --force --msg-filter '
     # Get the first line
     first_line=$(echo "$msg" | head -n1)
 
-    # Map old messages to new meaningful ones
+    # Map old messages to new meaningful ones (≤30 chars)
     case "$first_line" in
         "initial commit of distributed machine learning framework")
-            new_first="feat: initial implementation of distributed ML framework"
+            new_first="feat: initial ML framework impl"
             ;;
         "create license")
             new_first="docs: add MIT license"
             ;;
         "add improvement plan to main branch")
-            new_first="docs: add planned improvements and TODO comments"
+            new_first="docs: add TODO comments"
             ;;
         "merge pull request #1 from bniladridas/add-improvement-plan")
-            new_first="feat: integrate improvement plan and TODO updates"
+            new_first="feat: integrate TODO updates"
             ;;
         "create index.html")
             new_first="feat: add index.html page"
             ;;
         "feat: add citation file (.cff) (#6)")
-            new_first="docs: add citation file (.cff)"
+            new_first="docs: add citation file"
             ;;
         "feat: add conventional commit standards and scripts")
-            new_first="feat: add conventional commit standards and scripts"
+            new_first="feat: add commit standards"
             ;;
-        feat:\ initial\ implementation\ of\ distributed\ ML\ framework*)
-            new_first="feat: initial implementation of distributed ML framework"
+        "chore: remove redundant files index.html and requirements.txt")
+            new_first="chore: remove redundant files"
+            ;;
+        "chore: update commit rules to 30 chars")
+            new_first="chore: update rules to 30"
+            ;;
+        "docs: update rules to 30 chars")
+            new_first="docs: update rules to 30"
+            ;;
+        feat:\ initial\ implementation\ o*)
+            new_first="feat: initial ML framework"
+            ;;
+        docs:\ add\ planned\ improvement*)
+            new_first="docs: add TODO comments"
+            ;;
+        feat:\ integrate\ improvement\ p*)
+            new_first="feat: integrate TODO updates"
+            ;;
+        feat:\ add\ index.html\ page*)
+            new_first="feat: add index.html page"
+            ;;
+        docs:\ add\ citation\ file\ \(\.cff\)*)
+            new_first="docs: add citation file"
+            ;;
+        feat:\ add\ conventional\ commit*)
+            new_first="feat: add commit standards"
+            ;;
+        chore:\ remove\ redundant\ files*)
+            new_first="chore: remove redundant files"
+            ;;
+        chore:\ update\ commit\ rules\ to*)
+            new_first="chore: update rules to 30"
+            ;;
+        docs:\ update\ rules\ to\ 30\ chars*)
+            new_first="docs: update rules to 30"
             ;;
         *)
             new_first="$first_line"
