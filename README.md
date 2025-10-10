@@ -11,8 +11,13 @@
 
 ### docker (arm64)
 
-building docker image for arm64 — this will take several minutes.
-once done, run:
+build the docker image for arm64 — this may take several minutes:
+
+```bash
+docker build -t distributed-ml:latest .
+```
+
+run the container:
 
 ```bash
 docker run -p 8080:8080 distributed-ml:latest
