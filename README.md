@@ -1,116 +1,123 @@
 # Distributed Machine Learning Framework
 
-## Overview
-This project implements a distributed machine learning framework with real-time performance monitoring and task tracking.
+## overview
 
-## Prerequisites
-- C++17 Compiler
-- MPI (OpenMPI or MPICH)
-- OpenCV
-- Eigen3
-- CPP Rest SDK
-- nlohmann/json
+distributed machine learning framework with real-time performance monitoring and task tracking.
 
-## Build Instructions
+## prerequisites
+
+* c++17 compiler
+* mpi (openmpi or mpich)
+* opencv
+* eigen3
+* cpprestsdk
+* nlohmann/json
+
+## build
+
 ```bash
 mkdir build && cd build
 cmake ..
 make
 ```
 
-## Running the Application
+## run
+
 ```bash
 mpirun -n <num_processes> ./distributed_ml_app
 ```
 
-## Dashboard
-Access the dashboard at `http://localhost:8080`
+## dashboard
 
-## Features
-- Distributed Training
-- Real-time Task Monitoring
-- Performance Metrics Tracking
-- Web-based Dashboard
+open `http://localhost:8080`
 
-## Conventional Commits
+## features
 
-This project follows conventional commit standards to maintain a clean and consistent git history.
+* distributed training
+* real-time task monitoring
+* performance metrics tracking
+* web dashboard
 
-### Commit Message Format
-- First line must be lowercase and ≤30 characters
-- Must start with a valid type followed by `:`
-- Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`, `revert`
+## conventional commits
 
-Example: `feat: add distributed training support`
+project follows conventional commits for a clean git history.
 
-### Setup
-1. Copy the commit-msg hook to enable enforcement:
-   ```bash
-   cp scripts/commit-msg .git/hooks/commit-msg
-   chmod +x .git/hooks/commit-msg
-   ```
+### commit message rules
 
-### Rewriting History
-To clean up existing commit messages (make lowercase and truncate):
-```bash
-./scripts/rewrite_msg.sh
-git push --force --all
+* first line: lowercase and ≤30 characters
+* must start with a valid type followed by `:`
+* valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`, `revert`
+
+example (compliant):
+
+```
+feat: add docker ci/e2e
 ```
 
-## Architecture
-- Distributed Trainer: Manages distributed machine learning tasks
-- Task Manager: Tracks and manages individual tasks
-- Performance Tracker: Monitors and records performance metrics
-- Dashboard Server: Provides a web interface for monitoring
+### setup
 
-## Kubernetes Deployment
+```bash
+cp scripts/commit-msg .git/hooks/commit-msg
+chmod +x .git/hooks/commit-msg
+```
 
-### Prerequisites
-- Kubernetes Cluster
-- kubectl
-- Helm (optional)
 
-### Docker Image Build
+
+## architecture
+
+* distributed trainer
+* task manager
+* performance tracker
+* dashboard server
+
+## kubernetes
+
+### docker image
+
 ```bash
 docker build -t distributed-ml-app:latest .
 ```
 
-### Kubernetes Deployment Options
+### deployment options
 
-#### 1. Direct Kubernetes Deployment
+#### direct
+
 ```bash
-# Apply Kubernetes manifests
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/hpa.yaml
 ```
 
-#### 2. Helm Chart Deployment
+#### helm
+
 ```bash
-# Install Helm chart
 helm install distributed-ml helm/distributed-ml
 ```
 
-### Scaling and Monitoring
-- Horizontal Pod Autoscaler configured to scale based on CPU and memory utilization
-- Automatically scales between 3-10 replicas
-- Monitoring available through Kubernetes dashboard or `kubectl`
+### scaling & monitoring
 
-### Accessing the Dashboard
+* horizontal pod autoscaler (cpu/memory)
+* auto scale 3–10 replicas
+* monitoring via k8s dashboard or `kubectl`
+
+### access dashboard
+
 ```bash
 kubectl port-forward service/distributed-ml-service 8080:8080
+# then open http://localhost:8080
 ```
-Open `http://localhost:8080` in your browser
 
-### Logging and Debugging
+### logs
+
 ```bash
-# View logs
 kubectl logs -l app=distributed-ml
 ```
 
-## Planned Improvements
-- Better error handling
-- More unit tests
-- Performance optimizations
+## planned improvements
 
-## License
-MIT License
+* better error handling
+* more unit tests
+* performance optimizations
+
+## license
+
+mit
