@@ -1,25 +1,33 @@
-# multi-stage build for efficient image
-FROM ubuntu:20.04 AS builder
+# ---- Builder stage ----
+FROM ubuntu:22.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update && apt-get install -y \
-    build-essential cmake libopenmpi-dev \
-    libeigen3-dev libcpprest-dev libboost-all-dev nlohmann-json3-dev libgtest-dev libssl-dev git wget \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
-COPY . .
 
-RUN mkdir build && cd build && cmake .. && make
-
-FROM ubuntu:20.04
-
-RUN apt-get update && apt-get install -y \
-    libopenmpi3 libeigen3-dev libcpprest2.10 \
+# Essential build deps only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential cmake git ca-certificates wget python3 \
+    libopenmpi-dev libeigen3-dev libcpprest-dev libboost-all-dev \
+    nlohmann-json3-dev libssl-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/build/distributed_ml /usr/local/bin/
+COPY . /app
+RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release \
+ && cmake --build build -j$(nproc) --config Release
 
+# ---- Runtime stage ----
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /app
+RUN useradd -m appuser && apt-get update && apt-get install -y --no-install-recommends \
+    libopenmpi3 libcpprest2.10 libssl3 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/build/distributed_ml /usr/local/bin/distributed_ml
+USER appuser
 EXPOSE 8080
-CMD ["distributed_ml"]
+ENTRYPOINT ["distributed_ml"]
+
+LABEL org.opencontainers.image.source="https://github.com/bniladridas/ml" \
+      org.opencontainers.image.description="Distributed ML framework (ARM64 optimized)"

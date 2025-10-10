@@ -3,36 +3,24 @@ project(DistributedMLFramework CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
 
-# Verbose compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-deprecated-declarations")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
+# Optimized flags for ARM64/edge
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_compile_options(-O3 -march=native -ffast-math)
+endif()
 
-# Homebrew paths for macOS
-list(APPEND CMAKE_PREFIX_PATH 
-    "/opt/homebrew/opt/open-mpi"
-    "/opt/homebrew/opt/opencv"
-    "/opt/homebrew/opt/eigen"
-    "/opt/homebrew/opt/cpprestsdk"
-    "/opt/homebrew/opt/nlohmann-json"
-    "/opt/homebrew/opt/boost"
-)
-
-# Find required packages
+# Find packages
 find_package(MPI REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(cpprestsdk REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS
-    thread
-    filesystem
-    log
-    log_setup
-)
-find_package(GTest REQUIRED)
+find_package(Boost REQUIRED COMPONENTS thread filesystem log)
+find_package(GTest QUIET)
 
-# Include directories
 include_directories(
     ${MPI_INCLUDE_PATH}
     ${EIGEN3_INCLUDE_DIR}
@@ -49,7 +37,6 @@ set(SOURCES
     src/main.cpp
 )
 
-# Executable
 add_executable(distributed_ml ${SOURCES})
 
 # Link libraries
@@ -63,41 +50,18 @@ target_link_libraries(distributed_ml
     OpenSSL::Crypto
 )
 
-# Compiler flags (moved after target definition)
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-    set_target_properties(distributed_ml PROPERTIES
-        COMPILE_FLAGS "-Wno-deprecated-declarations -Wno-unused-parameter"
-    )
-endif()
+# Boost.Log macros
+target_compile_definitions(distributed_ml PRIVATE BOOST_LOG_DYN_LINK)
 
-# Define preprocessor macros for Boost.Log
-target_compile_definitions(distributed_ml PRIVATE
-    BOOST_LOG_DYN_LINK
-)
-
-# Enable testing
+# Enable testing if tests exist
 enable_testing()
-
-# Unit tests
 file(GLOB TEST_SOURCES "tests/*.cpp")
 if(TEST_SOURCES)
     add_executable(unit_tests ${TEST_SOURCES} src/distributed_trainer.cpp src/task_manager.cpp src/performance_tracker.cpp)
     target_link_libraries(unit_tests
-        ${MPI_LIBRARIES}
-        Eigen3::Eigen
-        cpprestsdk::cpprest
-        nlohmann_json::nlohmann_json
-        ${Boost_LIBRARIES}
-        GTest::gtest_main
-        OpenSSL::SSL
-        OpenSSL::Crypto
-    )
+        ${MPI_LIBRARIES} Eigen3::Eigen cpprestsdk::cpprest nlohmann_json::nlohmann_json ${Boost_LIBRARIES} GTest::gtest_main OpenSSL::SSL OpenSSL::Crypto)
     target_include_directories(unit_tests PRIVATE include)
     add_test(NAME unit_tests COMMAND unit_tests)
 endif()
 
-# Install
 install(TARGETS distributed_ml DESTINATION bin)
-
-# TODO: Improve dependency management
-# TODO: Refactor code to be more modular
