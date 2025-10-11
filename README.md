@@ -3,25 +3,34 @@
 * [x] c++17 distributed training
 * [x] real-time performance and task monitoring
 * [x] web dashboard — `http://localhost:8080`
-* [x] simple build: `cmake .. && make`
+* [x] simple build: `cmake -B build -S . && cmake --build build`
 * [x] run: `mpirun -n <num_processes> ./distributed_ml`
 * [x] kubernetes-ready (docker, helm, autoscaling)
 * [x] ci/cd on github actions (macos m1)
 * [x] apache 2.0 license
 
-### docker (arm64)
+### docker
 
-build the docker image for arm64 — this may take several minutes:
+build the docker image — this may take several minutes:
 
 ```bash
 docker build -t distributed-ml:latest .
 ```
 
-run the container:
+run the container (exposes dashboard on port 8080):
 
 ```bash
 docker run -p 8080:8080 distributed-ml:latest
 ```
+
+the container will run training then keep the dashboard server running indefinitely.
+
+### api endpoints
+
+- `GET /` - api info and available endpoints
+- `GET /tasks` - list all tasks
+- `GET /performance` - performance metrics
+- `POST /tasks` - create a new task
 
 ### example (local run)
 
