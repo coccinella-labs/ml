@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
         trainer.distributeData(trainingData);
 
         // Create dashboard server
-        auto dashboard = std::make_shared<DistributedML::DashboardServer>("http://localhost:8080");
+        auto dashboard = std::make_shared<DistributedML::DashboardServer>("http://0.0.0.0:8080");
 
         // Start dashboard server with error handling
         std::exception_ptr dashboardException = nullptr;
