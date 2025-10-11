@@ -115,13 +115,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push ARM64 Docker Image
+      - name: Build ARM64 Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/arm64
-          push: true
-          tags: ghcr.io/${{ github.repository }}/distributed-ml:latest
+          platforms: linux/amd64
+          load: true
+          tags: distributed-ml:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
