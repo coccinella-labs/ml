@@ -21,7 +21,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 RUN useradd -m appuser && apt-get update && apt-get install -y --no-install-recommends \
-    openmpi-bin libopenmpi3 libcpprest2.10 libssl3 libboost-log1.74.0 libboost-filesystem1.74.0 libboost-thread1.74.0 \
+    openmpi-bin libopenmpi3 libcpprest2.10 libssl3 libboost-log1.74.0 libboost-filesystem1.74.0 libboost-thread1.74.0 curl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/build/distributed_ml /usr/local/bin/distributed_ml

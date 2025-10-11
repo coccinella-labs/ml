@@ -129,7 +129,7 @@ jobs:
         run: |
           docker run -d --name distributed-ml-test -p 8080:8080 distributed-ml:latest
           sleep 10
-          if ! curl -f http://localhost:8080; then
+          if ! docker exec distributed-ml-test curl -f http://localhost:8080; then
             echo "Dashboard not responding!"
             docker logs distributed-ml-test
             exit 1
