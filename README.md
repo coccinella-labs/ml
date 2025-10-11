@@ -38,7 +38,7 @@ $ cd build && mpirun -np 1 ./distributed_ml
 [info] epoch 4/100 - global loss: 31.7566, gradient norm: 1.02059
 [info] early stopping triggered
 [info] distributed training completed
-dashboard server listening on: http://localhost:8080/
+dashboard server listening on: http://0.0.0.0:8080/
 [info] results aggregated from node 0
 training metrics: {
     "batch_size": 32,
