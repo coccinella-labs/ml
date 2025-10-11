@@ -27,7 +27,7 @@ RUN useradd -m appuser && apt-get update && apt-get install -y --no-install-reco
 COPY --from=builder /app/build/distributed_ml /usr/local/bin/distributed_ml
 USER appuser
 EXPOSE 8080
-ENTRYPOINT ["distributed_ml"]
+CMD ["mpirun", "-np", "1", "distributed_ml"]
 
 LABEL org.opencontainers.image.source="https://github.com/bniladridas/ml" \
       org.opencontainers.image.description="high-performance mpi ml framework (arm64 optimized)"
