@@ -1,8 +1,10 @@
 #include "../include/distributed_trainer.h"
 #include "../include/dashboard_server.h"
 #include <thread>
+#include <chrono>
 #include <stdexcept>
 #include <iostream>
+#include <unistd.h>
 #include <Eigen/Dense>
 #include <nlohmann/json.hpp>
 
@@ -37,6 +39,11 @@ int main(int argc, char** argv) {
         // Create and start dashboard server after training
         auto dashboard = std::make_shared<DistributedML::DashboardServer>("http://0.0.0.0:8080");
         dashboard->start();
+
+        // Keep the server running
+        while (true) {
+            sleep(1);
+        }
 
         // Aggregate and log results
         Eigen::MatrixXd results = trainer.aggregateResults();
