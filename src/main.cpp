@@ -31,44 +31,12 @@ int main(int argc, char** argv) {
         // Distribute data across nodes
         trainer.distributeData(trainingData);
 
-        // Create dashboard server
+        // Start training
+        trainer.train();
+
+        // Create and start dashboard server after training
         auto dashboard = std::make_shared<DistributedML::DashboardServer>("http://0.0.0.0:8080");
-
-        // Start dashboard server with error handling
-        std::exception_ptr dashboardException = nullptr;
-        std::thread dashboardThread([dashboard, &dashboardException]() {
-            try {
-                dashboard->start();
-            } catch (...) {
-                dashboardException = std::current_exception();
-            }
-        });
-
-        // Start training in a separate thread with error handling
-        std::exception_ptr trainingException = nullptr;
-        std::thread trainingThread([&trainer, &trainingException]() {
-            try {
-                trainer.train();
-            } catch (...) {
-                trainingException = std::current_exception();
-            }
-        });
-
-        // Wait for training to complete
-        trainingThread.join();
-
-        // Check for training exceptions
-        if (trainingException) {
-            std::rethrow_exception(trainingException);
-        }
-
-        // Wait for dashboard thread to finish (server keeps running)
-        dashboardThread.join();
-
-        // Check for dashboard exceptions
-        if (dashboardException) {
-            std::rethrow_exception(dashboardException);
-        }
+        dashboard->start();
 
         // Aggregate and log results
         Eigen::MatrixXd results = trainer.aggregateResults();
