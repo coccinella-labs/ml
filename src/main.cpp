@@ -62,10 +62,7 @@ int main(int argc, char** argv) {
             std::rethrow_exception(trainingException);
         }
 
-        // Stop dashboard
-        dashboard->stop();
-
-        // Wait for dashboard thread to finish
+        // Wait for dashboard thread to finish (server keeps running)
         dashboardThread.join();
 
         // Check for dashboard exceptions
