@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <cpprest/http_listener.h>
 #include <cpprest/json.h>
 #include <nlohmann/json.hpp>
@@ -20,6 +21,7 @@ private:
     TaskManager m_taskManager;
     PerformanceTracker m_performanceTracker;
 
+    void handleGetRoot(web::http::http_request request);
     void handleGetTasks(web::http::http_request request);
     void handleGetPerformance(web::http::http_request request);
     void handleCreateTask(web::http::http_request request);

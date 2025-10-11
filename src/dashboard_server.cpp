@@ -7,12 +7,16 @@ DashboardServer::DashboardServer(const std::string& address)
     : m_listener(address) {
     
     // Setup routes
-    m_listener.support(web::http::methods::GET, 
+    m_listener.support(web::http::methods::GET,
         [this](web::http::http_request request) {
-            if (request.request_uri().path() == "/tasks") {
+            if (request.request_uri().path() == "/") {
+                handleGetRoot(request);
+            } else if (request.request_uri().path() == "/tasks") {
                 handleGetTasks(request);
             } else if (request.request_uri().path() == "/performance") {
                 handleGetPerformance(request);
+            } else {
+                request.reply(web::http::status_codes::NotFound);
             }
         });
 
@@ -65,13 +69,25 @@ void DashboardServer::handleGetPerformance(web::http::http_request request) {
     request.reply(web::http::status_codes::OK, response);
 }
 
+void DashboardServer::handleGetRoot(web::http::http_request request) {
+    web::json::value response;
+    response["message"] = web::json::value::string("Distributed ML Dashboard API");
+    response["version"] = web::json::value::string("1.0.0");
+    response["endpoints"] = web::json::value::array();
+    response["endpoints"][0] = web::json::value::string("GET /tasks - Get all tasks");
+    response["endpoints"][1] = web::json::value::string("GET /performance - Get performance metrics");
+    response["endpoints"][2] = web::json::value::string("POST /tasks - Create a new task");
+
+    request.reply(web::http::status_codes::OK, response);
+}
+
 void DashboardServer::handleCreateTask(web::http::http_request request) {
     request.extract_json().then([this, request](web::json::value body) {
         std::string taskType = body["type"].as_string();
         nlohmann::json metadata = nlohmann::json::parse(body.serialize());
 
         std::string taskId = m_taskManager.addTask(taskType, metadata);
-        
+
         web::json::value response;
         response["task_id"] = web::json::value::string(taskId);
         request.reply(web::http::status_codes::Created, response);
