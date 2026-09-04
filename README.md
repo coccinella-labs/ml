@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/basebin/ml/main/.github/assets/thumbnail.png" alt="ml" width="100%">
+</p>
+
 ## distributed ml framework
 
 * [x] c++17 distributed training
