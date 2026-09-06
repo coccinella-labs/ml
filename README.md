@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/basebin/ml/main/.github/assets/thumbnail.png" alt="ml" width="100%">
+  <img src="https://raw.githubusercontent.com/coccinella-labs/ml/main/.github/assets/thumbnail.png" alt="ml" width="100%">
 </p>
 
 ## distributed ml framework
