@@ -29,5 +29,5 @@ USER appuser
 EXPOSE 8080
 CMD ["mpirun", "-np", "1", "distributed_ml"]
 
-LABEL org.opencontainers.image.source="https://github.com/bniladridas/ml" \
+LABEL org.opencontainers.image.source="https://github.com/coccinella-labs/ml" \
       org.opencontainers.image.description="high-performance mpi ml framework (arm64 optimized)"
