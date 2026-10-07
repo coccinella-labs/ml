@@ -25,10 +25,17 @@ jobs:
       - name: Install dependencies
         run: |
           brew update
-          # Runner images ship openssl@1.1 owning /opt/homebrew/bin/openssl,
-          # which makes the openssl@3 link pulled in below fail. Unlink first;
-          # harmless when 1.1 is absent.
+          # openssl@1.1 is deprecated and disabled, but runner images ship it
+          # owning /opt/homebrew/bin/openssl. That blocks the openssl@3 link
+          # pulled in below. `brew unlink` reports "0 symlinks removed" and
+          # leaves the file in place, because the symlink is laid down outside
+          # Homebrew's link database, so remove it directly when it is the stale
+          # 1.1 pointer and leave any legitimate link alone.
           brew unlink openssl@1.1 || true
+          if [ -L /opt/homebrew/bin/openssl ] && \
+             [ "$(readlink /opt/homebrew/bin/openssl)" = "/opt/homebrew/opt/openssl@1.1/bin/openssl" ]; then
+            rm -f /opt/homebrew/bin/openssl
+          fi
           brew install cmake open-mpi opencv eigen nlohmann-json cpprestsdk boost googletest
 
       - name: Configure
