@@ -20,15 +20,15 @@ To test locally, run the example with `mpirun -np 1 ./build/distributed_ml` and 
 
 ## Architecture
 
-ML is built as a distributed training framework with three main components. The distributed trainer at `src/distributed_trainer.cpp` manages MPI process synchronization, parameter broadcasting, and gradient aggregation. It divides training data across processes and ensures all nodes train on synchronized model parameters. The model at `src/model.cpp` implements forward pass, backward pass (gradient computation), and parameter updates. The web dashboard server at `src/dashboard_server.cpp` exposes REST endpoints for monitoring training progress and querying task status.
+ML is built as a distributed training framework with three main components. The distributed trainer at `src/distributed_trainer.cpp` manages MPI process synchronization, parameter broadcasting, and gradient aggregation. It divides training data across processes and ensures all nodes train on synchronized model parameters. There is no separate model file; training logic lives in the trainer itself. The web dashboard server at `src/dashboard_server.cpp` exposes REST endpoints for monitoring training progress and querying task status.
 
 The training loop operates across all processes simultaneously. Each process reads a portion of the training dataset locally, performs forward and backward passes on its batch, computes gradients, synchronizes with other processes (averaging gradients), applies updates to the local model, and repeats for the next epoch. The dashboard server runs on the first process and aggregates metrics from all processes, displaying them through a web interface and REST API.
 
-Key code anchors are `src/distributed_trainer.cpp` (MPI synchronization and distributed logic), `src/model.cpp` (forward/backward passes), `src/dashboard_server.cpp` (REST API and web server), `include/` (header files and configuration), and `deploy/` (Kubernetes manifests and Helm charts).
+Key code anchors are `src/distributed_trainer.cpp` (MPI synchronization and distributed logic, including the `TrainingConfig` struct), `src/dashboard_server.cpp` (REST API and web server), `include/` (headers), and `deploy/` (Kubernetes manifests and Helm charts).
 
 ## Configuration
 
-Training is configured through `include/config.h` with parameters for learning rate (`lr`), number of epochs (`epochs`), batch size (`batch_size`), and model hyperparameters. CMake flags control build options: `-DENABLE_MPI=ON` enables distributed training (default), `-DENABLE_DASHBOARD=ON` enables the web dashboard (default). Docker and Kubernetes deployments read configuration from environment variables passed at runtime.
+Training is configured through the `TrainingConfig` struct in `include/distributed_trainer.h` (learning rate default 0.01, epoch and batch counts clamped to at least 1). There is no config header file and no CMake `ENABLE_MPI` or `ENABLE_DASHBOARD` options. Docker and Kubernetes deployments read configuration from environment variables passed at runtime.
 
 Common configuration values are: learning rate typically 0.01 for gradient descent, batch size 32 or 64 depending on dataset size, and epoch count 100 or until early stopping triggers. Early stopping is triggered automatically when loss plateaus; you can adjust the early stopping patience threshold in the configuration if needed.
 
@@ -40,9 +40,9 @@ The dashboard also provides a web interface at `http://localhost:8080` showing r
 
 ## Contributing
 
-Fork the repository, create a feature branch, make changes to `src/` or `include/`, add tests to `tests/`, run `cmake` to build and test locally, and open a PR. Code standards: use C++17 features and idioms, keep MPI communication in `distributed_trainer.cpp`, and document any new configuration parameters in `include/config.h`.
+Fork the repository, create a feature branch, make changes to `src/` or `include/`, add tests to `tests/`, run `cmake` to build and test locally, and open a PR. Code standards: use C++17 features and idioms, keep MPI communication in `distributed_trainer.cpp`, and document any new configuration parameters in `include/distributed_trainer.h`.
 
-When adding a new training algorithm, implement it in `src/model.cpp` or create a new model file. When adding monitoring capabilities, extend the dashboard server in `src/dashboard_server.cpp`. When adding distributed coordination logic, extend `distributed_trainer.cpp` with clear comments explaining the MPI communication pattern.
+When adding a new training algorithm, implement it in `src/distributed_trainer.cpp` or create a new model file. When adding monitoring capabilities, extend the dashboard server in `src/dashboard_server.cpp`. When adding distributed coordination logic, extend `distributed_trainer.cpp` with clear comments explaining the MPI communication pattern.
 
 ## Build and Deploy
 

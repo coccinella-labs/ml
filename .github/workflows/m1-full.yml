@@ -25,6 +25,10 @@ jobs:
       - name: Install dependencies
         run: |
           brew update
+          # Runner images ship openssl@1.1 owning /opt/homebrew/bin/openssl,
+          # which makes the openssl@3 link pulled in below fail. Unlink first;
+          # harmless when 1.1 is absent.
+          brew unlink openssl@1.1 || true
           brew install cmake open-mpi opencv eigen nlohmann-json cpprestsdk boost googletest
 
       - name: Configure
