@@ -4,9 +4,11 @@
 
 # ML
 
-ML is a distributed machine learning framework written in C++17 that coordinates training across multiple processes using MPI (Message Passing Interface). It synchronizes model parameters across nodes, aggregates gradients, and monitors training progress in real-time through a web dashboard. The framework is designed for production use, with support for Kubernetes deployment, Docker containers, and GitHub Actions CI/CD.
+ML is an MPI coordination scaffold written in C++17. It distributes data across processes, aggregates gradients with `MPI_Allreduce`, broadcasts parameters, and serves training metrics through a REST dashboard. Deployment scaffolding exists for Kubernetes and Docker, and CI runs on GitHub Actions.
 
-Status: Stable. Distributed training functional. Production-ready with monitoring and orchestration support.
+**The training math is not implemented.** What is real is the distributed coordination and the monitoring surface. What is simulated is the learning: the training data is randomly generated, and per-batch "gradients" are `i * learningRate` rather than the output of a forward and backward pass. See [Known Limitations](#known-limitations).
+
+Status: experimental. Coordination and monitoring are functional; no model is trained.
 
 ## Getting Started
 
@@ -20,9 +22,11 @@ To test locally, run the example with `mpirun -np 1 ./build/distributed_ml` and 
 
 ## Architecture
 
-ML is built as a distributed training framework with three main components. The distributed trainer at `src/distributed_trainer.cpp` manages MPI process synchronization, parameter broadcasting, and gradient aggregation. It divides training data across processes and ensures all nodes train on synchronized model parameters. There is no separate model file; training logic lives in the trainer itself. The web dashboard server at `src/dashboard_server.cpp` exposes REST endpoints for monitoring training progress and querying task status.
+ML has three main components. The distributed trainer at `src/distributed_trainer.cpp` manages MPI process synchronization, parameter broadcasting, and gradient aggregation. It partitions the dataset across processes by rank and keeps parameters synchronized by broadcasting from rank 0. There is no model file and no model. The web dashboard server at `src/dashboard_server.cpp` exposes REST endpoints for querying task status and performance metrics.
 
-The training loop operates across all processes simultaneously. Each process reads a portion of the training dataset locally, performs forward and backward passes on its batch, computes gradients, synchronizes with other processes (averaging gradients), applies updates to the local model, and repeats for the next epoch. The dashboard server runs on the first process and aggregates metrics from all processes, displaying them through a web interface and REST API.
+The training loop runs across all processes simultaneously, and this is where the simulation boundary sits. Each process takes its slice of the dataset, walks it in batches, and for each batch calls `processLocalBatch`, which returns `i * learningRate` for sample `i` rather than a computed gradient. The source marks this explicitly, listing the forward pass, loss computation, and backward pass as the work a real implementation would add. Those gradient vectors are then genuinely reduced across ranks with `MPI_Allreduce` and normalized by world size, and loss is averaged the same way. So the collective operations are real and the values flowing through them are synthetic. `updateModelParameters` logs the loss and gradient norm and returns without touching any weights.
+
+The dashboard server runs on rank 0 and serves metrics from every process through a web interface and REST API.
 
 Key code anchors are `src/distributed_trainer.cpp` (MPI synchronization and distributed logic, including the `TrainingConfig` struct), `src/dashboard_server.cpp` (REST API and web server), `include/` (headers), and `deploy/` (Kubernetes manifests and Helm charts).
 
@@ -50,27 +54,39 @@ Local development uses CMake as described in Getting Started. Build a release bi
 
 For Kubernetes deployment, Helm charts are provided in `deploy/helm/`. Deploy with `helm install ml-training deploy/helm/ml --set replicaCount=4` to spawn four training processes. The Helm chart handles MPI process coordination and network setup. Kubernetes manifests in `deploy/k8s/` provide a lower-level alternative without Helm templating.
 
-CI/CD runs on GitHub Actions with builds tested on macOS M1 and Linux runners. Pull requests trigger automatic testing; merges to main trigger production builds and artifact uploads.
+CI/CD runs on GitHub Actions with builds tested on macOS M1 and Linux runners. Pull requests trigger automatic testing; merges to main trigger the full matrix and artifact uploads. No release artifacts are published from this workflow.
 
 ## Known Limitations
 
-The framework uses MPI for process coordination, which requires either local processes on a single machine (via mpirun) or an HPC cluster with MPI enabled. Kubernetes deployment requires additional MPI configuration or a custom network overlay. GPU acceleration is not yet implemented; training runs on CPU only. Communication patterns are all-reduce for gradient averaging, which scales well to tens of processes but becomes bandwidth-limited at hundreds of nodes. Fault tolerance is not built-in; if a process crashes, training must restart.
+**No training is performed.** The gradient vectors are synthetic and the parameter update is a no-op, so no accuracy, convergence, or model-quality claim can be made from a run. Benchmark the coordination layer, not learning.
 
-The framework is optimized for small to medium models (hundreds of millions of parameters). Very large models (multi-billion parameters) require additional optimization such as model parallelism or gradient checkpointing. Data loading is currently synchronous; asynchronous prefetching would improve throughput for IO-bound workloads. The dashboard server runs only on rank 0; if that process crashes, monitoring stops but training continues.
+The training data is generated with `setRandom()` in `src/main.cpp`, so there is no dataset loading, no file format, and no I/O to profile. Data loading is synchronous by construction.
+
+MPI coordination requires either local processes on a single machine via `mpirun`, or an HPC cluster with MPI enabled. Kubernetes deployment requires additional MPI configuration or a custom network overlay; the Helm chart does not configure a launcher. GPU acceleration is not implemented.
+
+Communication is all-reduce for gradient and loss aggregation plus a broadcast from rank 0. All-reduce scales well to tens of processes and becomes bandwidth-limited at hundreds, but this has not been measured here. Fault tolerance is not built in: if a process crashes, training must restart.
+
+The dashboard runs only on rank 0; if that process dies, monitoring stops while the remaining processes continue.
+
+Error handling is marked `TODO` in `src/distributed_trainer.cpp` and `src/main.cpp`, and data distribution is marked as needing more efficient handling.
 
 ## Performance
 
-Training throughput depends on the model and dataset size. On a single process, expect 1-10 batches per second depending on model complexity. With four processes, throughput typically scales to 3-8x faster due to parallelism, with some overhead from MPI communication. Gradient synchronization via all-reduce adds latency proportional to the number of processes and model size; typical overhead is 5-20% per epoch. The dashboard has minimal overhead (< 1% CPU) when running.
+No throughput or scaling figures are recorded. Earlier versions of this document quoted batches per second, a 3-8x speedup at four processes, and 5-20% all-reduce overhead; those numbers were not measured and have been removed.
 
-Early stopping typically reduces total training time by 30-50% compared to fixed epoch counts, by terminating when loss plateaus. Communication time dominates computation time for models smaller than 10 million parameters; for larger models, computation dominates.
+What can be stated: the work being timed is a synthetic gradient computation, so any throughput figure would describe the cost of the collective operations and nothing about training. Measuring this layer is still worthwhile for validating that all-reduce behaves as expected at a given rank count.
+
+Early stopping exists and triggers when the loss stops improving, using a patience counter of 3 in `src/distributed_trainer.cpp`. Since the loss it watches is `localGradient.norm()` on synthetic vectors, its effect on a real training run is untested, and the previously quoted 30-50% saving has been removed as unmeasured.
 
 ## Roadmap
 
-Planned features include GPU acceleration via CUDA or Metal, asynchronous gradient accumulation to reduce synchronization overhead, and gradient compression for efficient communication across slow networks. Model checkpointing and resume capability are planned. Mixed-precision training and quantization are under consideration. See GitHub Issues for the full roadmap and current priorities.
+The substantive item is implementing the training math: a forward pass, a loss function, a backward pass producing real gradients, and a parameter update that actually applies them. That is what would turn this from a coordination scaffold into a training framework, and nothing else on this list matters as much until it exists.
+
+After that: dataset loading to replace `setRandom()`, checkpointing and resume, GPU acceleration, asynchronous gradient accumulation, gradient compression for slow networks, and mixed-precision training.
 
 ## Related Documentation
 
-The framework integrates with the gpucomm ecosystem for benchmarking distributed training performance. See the main gpucomm documentation for context on how ML training fits into the broader compute environment. CMakeLists.txt documents build options and dependencies. The Dockerfile provides a reproducible deployment environment and can serve as a reference for other production setups.
+CMakeLists.txt documents build options and dependencies. The Dockerfile provides a reproducible build and container environment. The `deploy/` tree holds Kubernetes manifests and a Helm chart, which cover scheduling and services but not MPI process launch. See the main gpucomm documentation for where this fits in the wider compute environment.
 
 ## License
 
