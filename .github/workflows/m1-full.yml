@@ -37,9 +37,13 @@ jobs:
           restore-keys: ${{ runner.os }}-brew-
 
       - name: Install dependencies
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: "1"
         run: |
+          # `brew update` is required: without fresh metadata brew reports
+          # "no bottle available" for cmake and open-mpi. But it must NOT be
+          # allowed to upgrade formulae the runner image already ships, because
+          # those upgrades have no bottle yet and get built from source. That
+          # cost 13 min for cmake, 7 min for open-mpi, and 3m41s for openssl@3.
+          brew update
           # openssl@1.1 is deprecated and disabled, but runner images ship it
           # owning /opt/homebrew/bin/openssl. That blocks the openssl@3 link
           # pulled in below. `brew unlink` reports "0 symlinks removed" and
@@ -51,7 +55,15 @@ jobs:
              [ "$(readlink /opt/homebrew/bin/openssl)" = "/opt/homebrew/opt/openssl@1.1/bin/openssl" ]; then
             rm -f /opt/homebrew/bin/openssl
           fi
-          brew install cmake open-mpi eigen nlohmann-json cpprestsdk boost googletest
+          # Install only what is missing. `brew install <name>` upgrades an
+          # outdated-but-present formula, which is the source-build trap above.
+          for formula in cmake open-mpi eigen nlohmann-json cpprestsdk boost googletest; do
+            if brew list --formula "$formula" >/dev/null 2>&1; then
+              echo "==> $formula already installed, leaving at image version"
+            else
+              brew install "$formula"
+            fi
+          done
 
       - name: Configure
         run: |
