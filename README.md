@@ -32,9 +32,9 @@ Key code anchors are `src/distributed_trainer.cpp` (MPI synchronization and dist
 
 ## Configuration
 
-Training is configured through the `TrainingConfig` struct in `include/distributed_trainer.h` (learning rate default 0.01, epoch and batch counts clamped to at least 1). There is no config header file and no CMake `ENABLE_MPI` or `ENABLE_DASHBOARD` options. Docker and Kubernetes deployments read configuration from environment variables passed at runtime.
+Training is configured through the `TrainingConfig` struct in `include/distributed_trainer.h` (learning rate default 0.01, epoch and batch counts clamped to at least 1). There is no config header file and no CMake `ENABLE_MPI` or `ENABLE_DASHBOARD` options, and there are no command-line flags: the values come from a single hardcoded call to `validateAndSetConfig({0.01, 100, 32})` in `src/distributed_trainer.cpp`. The deployment manifests set `MPI_NODES` and `LOG_LEVEL`, but no source file calls `getenv`, so neither variable currently reaches the program.
 
-Common configuration values are: learning rate typically 0.01 for gradient descent, batch size 32 or 64 depending on dataset size, and epoch count 100 or until early stopping triggers. Early stopping is triggered automatically when loss plateaus; you can adjust the early stopping patience threshold in the configuration if needed.
+Those three values are the only ones, and they are fixed in source: learning rate 0.01, 100 epochs, batch size 32. Early stopping triggers when the loss plateaus, using a patience of 3 declared as a function-local `static int` in `src/distributed_trainer.cpp`. It is not part of `TrainingConfig` and cannot be changed without editing the source.
 
 ## API
 
@@ -44,7 +44,7 @@ The dashboard also provides a web interface at `http://localhost:8080` showing r
 
 ## Contributing
 
-Fork the repository, create a feature branch, make changes to `src/` or `include/`, add tests to `tests/`, run `cmake` to build and test locally, and open a PR. Code standards: use C++17 features and idioms, keep MPI communication in `distributed_trainer.cpp`, and document any new configuration parameters in `include/distributed_trainer.h`.
+Fork the repository, create a feature branch, make changes to `src/` or `include/`, add tests to `tests/`, and open a PR. Build and test with `cmake -B build -S . && cmake --build build && ctest --test-dir build`; note that `unit_tests` covers the trackers only, so a green run says nothing about `distributed_trainer.cpp`. Tests for the coordinator are wanted. Code standards: use C++17 features and idioms, keep MPI communication in `distributed_trainer.cpp`, and document any new configuration parameters in `include/distributed_trainer.h`.
 
 When adding a new training algorithm, implement it in `src/distributed_trainer.cpp` or create a new model file. When adding monitoring capabilities, extend the dashboard server in `src/dashboard_server.cpp`. When adding distributed coordination logic, extend `distributed_trainer.cpp` with clear comments explaining the MPI communication pattern.
 
@@ -52,7 +52,7 @@ When adding a new training algorithm, implement it in `src/distributed_trainer.c
 
 Local development uses CMake as described in Getting Started. Build a release binary with `cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && cmake --build build`. The binary scales to any number of processes via `mpirun`. For Docker, the Dockerfile builds the project inside a container and exposes port 8080 for the dashboard.
 
-For Kubernetes deployment, Helm charts are provided in `deploy/helm/`. Deploy with `helm install ml-training deploy/helm/ml --set replicaCount=4` to spawn four training processes. The Helm chart handles MPI process coordination and network setup. Kubernetes manifests in `deploy/k8s/` provide a lower-level alternative without Helm templating.
+For Kubernetes deployment, a Helm chart is provided in `deploy/helm/distributed-ml/`. Install it with `helm install ml-training deploy/helm/distributed-ml --set replicaCount=4`. The chart sets `replicaCount`, a Service, and an HPA; it does not configure an MPI launcher, so `mpirun` has to come from elsewhere. Kubernetes manifests in `deploy/k8s/` provide a lower-level alternative without Helm templating.
 
 CI/CD runs on GitHub Actions with builds tested on macOS M1 and Linux runners. Pull requests trigger automatic testing; merges to main trigger the full matrix and artifact uploads. No release artifacts are published from this workflow.
 
@@ -69,6 +69,8 @@ Communication is all-reduce for gradient and loss aggregation plus a broadcast f
 The dashboard runs only on rank 0; if that process dies, monitoring stops while the remaining processes continue.
 
 Error handling is marked `TODO` in `src/distributed_trainer.cpp` and `src/main.cpp`, and data distribution is marked as needing more efficient handling.
+
+**The coordinator has no test coverage.** `tests/` covers `performance_tracker` and `task_manager` only; nothing imports `distributed_trainer.cpp` or `main.cpp`. The MPI synchronisation, the parameter broadcast, and the all-reduce are therefore unverified by the test suite, which builds and runs `unit_tests` but never exercises the part of the codebase this project exists for. A passing `ctest` here means the trackers work, not that the distributed layer does.
 
 ## Performance
 
