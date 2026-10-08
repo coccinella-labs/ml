@@ -18,7 +18,10 @@ on:
 
 jobs:
   build-test:
-    runs-on: macos-14
+    # Pinned, not macos-latest. GitHub has deprecated the macos-14 images
+    # (runner-images issues/13518) and this workflow carries image-specific
+    # workarounds, so an unpinned label would drift underneath it silently.
+    runs-on: macos-15
     strategy:
       matrix:
         build_type: [Debug, Release]

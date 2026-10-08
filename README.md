@@ -54,7 +54,7 @@ Local development uses CMake as described in Getting Started. Build a release bi
 
 For Kubernetes deployment, a Helm chart is provided in `deploy/helm/distributed-ml/`. Install it with `helm install ml-training deploy/helm/distributed-ml --set replicaCount=4`. The chart sets `replicaCount`, a Service, and an HPA; it does not configure an MPI launcher, so `mpirun` has to come from elsewhere. Kubernetes manifests in `deploy/k8s/` provide a lower-level alternative without Helm templating.
 
-CI/CD runs on GitHub Actions with builds tested on macOS M1 and Linux runners. Pull requests trigger automatic testing; merges to main trigger the full matrix and artifact uploads. No release artifacts are published from this workflow.
+CI/CD runs on GitHub Actions. The build matrix is pinned to `macos-15` and `ubuntu-latest`; the macOS label is deliberately not `macos-latest`, because this workflow carries image-specific workarounds and an unpinned label would drift underneath them. The specific Apple silicon chip varies between runner images, so no chip claim is made here. Pull requests trigger automatic testing; merges to main trigger the full matrix and artifact uploads. No release artifacts are published from this workflow.
 
 ## Known Limitations
 
