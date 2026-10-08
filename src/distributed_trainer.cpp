@@ -197,14 +197,20 @@ Eigen::VectorXd DistributedTrainer::aggregateGradients(const std::vector<Eigen::
     // Reducing localGradients[0] alone silently discarded every later batch:
     // train() passes one gradient per batch, so a multi-epoch run trained on
     // the first batch of each epoch and still reported a plausible loss.
-    const Eigen::Index length = localGradients[0].size();
+    // The final batch of an epoch is short whenever the sample count is not a
+    // multiple of the batch size, and processLocalBatch sizes its gradient to
+    // the batch it was given. So gradient lengths legitimately differ within one
+    // rank, and the accumulator takes the longest. Missing trailing entries of a
+    // short gradient are treated as zero, which matches summing per-sample
+    // gradients rather than averaging over slots.
+    Eigen::Index length = 0;
+    for (const Eigen::VectorXd& gradient : localGradients) {
+        length = std::max(length, gradient.size());
+    }
+
     Eigen::VectorXd localSum = Eigen::VectorXd::Zero(length);
     for (const Eigen::VectorXd& gradient : localGradients) {
-        if (gradient.size() != length) {
-            throw std::runtime_error(
-                "aggregateGradients: gradient size mismatch across batches");
-        }
-        localSum += gradient;
+        localSum.head(gradient.size()) += gradient;
     }
 
     Eigen::VectorXd globalGradient = Eigen::VectorXd::Zero(length);

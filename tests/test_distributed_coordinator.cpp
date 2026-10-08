@@ -168,6 +168,29 @@ TEST_F(DistributedCoordinator, AllReduceOfASingleEntryIsUnchangedByTheFix) {
     }
 }
 
+// Batches are ragged whenever the sample count is not a multiple of the batch
+// size, which is the normal case: processLocalBatch sizes its gradient to the
+// batch it was handed. The accumulator must take the longest gradient and treat
+// a short one's missing tail as zero, rather than failing or dropping it.
+TEST_F(DistributedCoordinator, AllReduceAcceptsRaggedBatchLengths) {
+    Eigen::VectorXd full = Eigen::VectorXd::Constant(4, 1.0);
+    Eigen::VectorXd shortBatch = Eigen::VectorXd::Constant(2, 2.0);
+
+    const Eigen::VectorXd global = Access::aggregateGradients(trainer(), {full, shortBatch});
+
+    ASSERT_EQ(global.size(), 4);
+
+    // Each rank contributes full + shortPadded = [1+2, 1+2, 1+0, 1+0].
+    // Every rank contributes the same values, so summing across three ranks and
+    // dividing by the world size returns those same values unchanged.
+    for (int i = 0; i < 2; ++i) {
+        EXPECT_NEAR(global(i), 3.0, 1e-9) << "element " << i;
+    }
+    for (int i = 2; i < 4; ++i) {
+        EXPECT_NEAR(global(i), 1.0, 1e-9) << "element " << i;
+    }
+}
+
 // 2. Broadcast correctness.
 //
 // synchronizeModelParameters broadcasts a Zero(10) and discards the result, so
