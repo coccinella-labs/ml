@@ -68,11 +68,31 @@ if(TEST_SOURCES)
         cpprestsdk::cpprest
         nlohmann_json::nlohmann_json
         ${Boost_LIBRARIES}
-        GTest::gtest_main
+        # GTest::gtest, not gtest_main: tests/test_main.cpp supplies main() so
+        # that MPI lifetime is explicit rather than implicit in gtest_main.
+        GTest::gtest
         OpenSSL::SSL
         OpenSSL::Crypto)
     target_include_directories(unit_tests PRIVATE include)
-    add_test(NAME unit_tests COMMAND unit_tests)
+
+    # Single-process entry. The DistributedCoordinator tests are excluded here:
+    # in a one-rank world their assertions hold trivially, so including them
+    # would report a green that proves nothing.
+    add_test(NAME unit_tests COMMAND unit_tests --gtest_filter=-DistributedCoordinator.*)
+
+    # Distributed entry. The coordinator tests assert a three-rank world, so
+    # they must not run unless mpiexec is available.
+    find_program(MPIEXEC_EXECUTABLE mpiexec)
+    if(MPIEXEC_EXECUTABLE)
+        add_test(NAME unit_tests_distributed
+                 COMMAND ${MPIEXEC_EXECUTABLE} -n 3
+                         $<TARGET_FILE:unit_tests>
+                         --gtest_filter=DistributedCoordinator.*)
+        # A hung collective would otherwise stall the whole CI job.
+        set_tests_properties(unit_tests_distributed PROPERTIES TIMEOUT 120)
+    else()
+        message(WARNING "mpiexec not found; the distributed coordinator tests will not run")
+    endif()
 endif()
 
 install(TARGETS distributed_ml DESTINATION bin)

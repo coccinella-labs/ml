@@ -44,7 +44,7 @@ The dashboard also provides a web interface at `http://localhost:8080` showing r
 
 ## Contributing
 
-Fork the repository, create a feature branch, make changes to `src/` or `include/`, add tests to `tests/`, and open a PR. Build and test with `cmake -B build -S . && cmake --build build && ctest --test-dir build`; note that `unit_tests` covers the trackers only, so a green run says nothing about `distributed_trainer.cpp`. Tests for the coordinator are wanted. Code standards: use C++17 features and idioms, keep MPI communication in `distributed_trainer.cpp`, and document any new configuration parameters in `include/distributed_trainer.h`.
+Fork the repository, create a feature branch, make changes to `src/` or `include/`, add tests to `tests/`, and open a PR. Build and test with `cmake -B build -S . && cmake --build build && ctest --test-dir build`, which runs two entries: the single-process tracker tests, and the coordinator tests under `mpiexec -n 3`. The coordinator tests assert a three-rank world and fail if run in any other, so they cannot pass vacuously. `main.cpp` remains untested and is the obvious place to add coverage next. Code standards: use C++17 features and idioms, keep MPI communication in `distributed_trainer.cpp`, and document any new configuration parameters in `include/distributed_trainer.h`.
 
 When adding a new training algorithm, implement it in `src/distributed_trainer.cpp` or create a new model file. When adding monitoring capabilities, extend the dashboard server in `src/dashboard_server.cpp`. When adding distributed coordination logic, extend `distributed_trainer.cpp` with clear comments explaining the MPI communication pattern.
 
@@ -70,7 +70,9 @@ The dashboard runs only on rank 0; if that process dies, monitoring stops while 
 
 Error handling is marked `TODO` in `src/distributed_trainer.cpp` and `src/main.cpp`, and data distribution is marked as needing more efficient handling.
 
-**The coordinator has no test coverage.** `tests/` covers `performance_tracker` and `task_manager` only; nothing imports `distributed_trainer.cpp` or `main.cpp`. The MPI synchronisation, the parameter broadcast, and the all-reduce are therefore unverified by the test suite, which builds and runs `unit_tests` but never exercises the part of the codebase this project exists for. A passing `ctest` here means the trackers work, not that the distributed layer does.
+**`main.cpp` is still untested.** `tests/` covers `performance_tracker` and `task_manager` in a single process, and the MPI coordinator under `mpiexec -n 3`. Nothing exercises `main.cpp`, so the wiring between data generation, the training loop, and the dashboard is unverified.
+
+The coordinator tests pin two current behaviours that are limitations rather than features. `aggregateGradients` reduces only the first entry of the gradient list and ignores the rest, and it divides by the world size, so the result is a per-rank mean rather than a sum. Both are asserted so that changing either is a visible edit. The tests reach the private collectives through a test-only friend accessor; the production build declares no behaviour for it.
 
 ## Performance
 

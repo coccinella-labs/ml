@@ -67,6 +67,11 @@ private:
     // Early stopping condition
     bool shouldStopTraining(double globalLoss);
 
+    // The collective members are private, so the coordinator tests reach them
+    // through this accessor. Test-only: it declares no behaviour of its own and
+    // the production build never references it.
+    friend struct DistributedTrainerTestAccess;
+
     int m_rank;
     int m_worldSize;
     MPI_Comm m_communicator;
