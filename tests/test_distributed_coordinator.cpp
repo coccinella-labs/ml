@@ -127,24 +127,44 @@ TEST_F(DistributedCoordinator, AllReduceAveragesTheFirstGradientAcrossRanks) {
     }
 }
 
-// The current implementation reduces only the first entry of the vector and
-// ignores the rest. That is a limitation rather than a feature, but it is the
-// current behaviour, and pinning it means a future change to reduce every entry
-// shows up as a deliberate edit instead of an accident.
-TEST_F(DistributedCoordinator, AllReduceCurrentlyIgnoresLaterGradientEntries) {
+// Every supplied batch gradient must reach the reduction. This previously
+// asserted the opposite: aggregateGradients reduced only localGradients[0] and
+// discarded the rest, so a run could train on one batch per process and still
+// report a plausible loss. The decoy entry is what proves the later gradients
+// are now included rather than ignored.
+TEST_F(DistributedCoordinator, AllReduceIncludesEveryGradientEntry) {
     constexpr int kLength = 3;
 
     Eigen::VectorXd first = Eigen::VectorXd::Zero(kLength);
-    Eigen::VectorXd ignored = Eigen::VectorXd::Zero(kLength);
+    Eigen::VectorXd later = Eigen::VectorXd::Zero(kLength);
     for (int i = 0; i < kLength; ++i) {
-        first(i) = rank() + 1.0;  // mean is 2.0 across ranks {0,1,2}
-        ignored(i) = 1000.0;      // would dominate if it were reduced
+        first(i) = rank() + 1.0;  // mean across ranks {0,1,2} is 2.0
+        later(i) = 1000.0;        // dominates if it is included
     }
 
-    const Eigen::VectorXd global = Access::aggregateGradients(trainer(), {first, ignored});
+    const Eigen::VectorXd global = Access::aggregateGradients(trainer(), {first, later});
 
     for (int i = 0; i < kLength; ++i) {
-        EXPECT_NEAR(global(i), 2.0, 1e-9) << "later entries are not reduced today; element " << i;
+        // Per-rank sum is first + later; averaged over three ranks.
+        EXPECT_NEAR(global(i), 2.0 + 1000.0, 1e-9)
+            << "later batch gradients must participate; element " << i;
+    }
+}
+
+// A single-entry list must reduce exactly as before, so the fix did not change
+// the meaning of the one-gradient case.
+TEST_F(DistributedCoordinator, AllReduceOfASingleEntryIsUnchangedByTheFix) {
+    constexpr int kLength = 3;
+
+    Eigen::VectorXd only = Eigen::VectorXd::Zero(kLength);
+    for (int i = 0; i < kLength; ++i) {
+        only(i) = (rank() + 1) * 10.0;
+    }
+
+    const Eigen::VectorXd global = Access::aggregateGradients(trainer(), {only});
+
+    for (int i = 0; i < kLength; ++i) {
+        EXPECT_NEAR(global(i), 20.0, 1e-9) << "element " << i;
     }
 }
 

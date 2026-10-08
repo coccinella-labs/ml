@@ -189,15 +189,33 @@ double DistributedTrainer::computeLocalLoss(const Eigen::VectorXd& localGradient
 
 Eigen::VectorXd DistributedTrainer::aggregateGradients(const std::vector<Eigen::VectorXd>& localGradients) {
     // Aggregate gradients across nodes using MPI
-    Eigen::VectorXd globalGradient = Eigen::VectorXd::Zero(localGradients[0].size());
-    
+    if (localGradients.empty()) {
+        return Eigen::VectorXd();
+    }
+
+    // Accumulate every batch gradient this rank produced before reducing.
+    // Reducing localGradients[0] alone silently discarded every later batch:
+    // train() passes one gradient per batch, so a multi-epoch run trained on
+    // the first batch of each epoch and still reported a plausible loss.
+    const Eigen::Index length = localGradients[0].size();
+    Eigen::VectorXd localSum = Eigen::VectorXd::Zero(length);
+    for (const Eigen::VectorXd& gradient : localGradients) {
+        if (gradient.size() != length) {
+            throw std::runtime_error(
+                "aggregateGradients: gradient size mismatch across batches");
+        }
+        localSum += gradient;
+    }
+
+    Eigen::VectorXd globalGradient = Eigen::VectorXd::Zero(length);
+
     // MPI reduction to aggregate gradients
     MPI_Allreduce(
-        localGradients[0].data(), 
-        globalGradient.data(), 
-        localGradients[0].size(), 
-        MPI_DOUBLE, 
-        MPI_SUM, 
+        localSum.data(),
+        globalGradient.data(),
+        length,
+        MPI_DOUBLE,
+        MPI_SUM,
         m_communicator
     );
 

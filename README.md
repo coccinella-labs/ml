@@ -72,7 +72,9 @@ Error handling is marked `TODO` in `src/distributed_trainer.cpp` and `src/main.c
 
 **`main.cpp` is still untested.** `tests/` covers `performance_tracker` and `task_manager` in a single process, and the MPI coordinator under `mpiexec -n 3`. Nothing exercises `main.cpp`, so the wiring between data generation, the training loop, and the dashboard is unverified.
 
-The coordinator tests pin two current behaviours that are limitations rather than features. `aggregateGradients` reduces only the first entry of the gradient list and ignores the rest, and it divides by the world size, so the result is a per-rank mean rather than a sum. Both are asserted so that changing either is a visible edit. The tests reach the private collectives through a test-only friend accessor; the production build declares no behaviour for it.
+`aggregateGradients` accumulates every batch gradient a rank produced before the `MPI_Allreduce`, then divides by the world size, so the result is a per-rank mean over all batches. It previously reduced only `localGradients[0]`, which meant a run with more than one batch per epoch trained on the first batch of each epoch and still reported a plausible loss; the coordinator tests now assert that later entries participate. The tests reach the private collectives through a test-only friend accessor, and the production build declares no behaviour for it.
+
+Still not a model: there are no parameters to update, no forward pass, no backward pass, and no checkpointing. The mean over ranks is also a convention worth revisiting when real gradients exist, since averaging changes the effective learning rate depending on how gradients are scaled.
 
 ## Performance
 
