@@ -30,12 +30,16 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/Library/Caches/Homebrew
-          key: ${{ runner.os }}-brew-${{ hashFiles('CMakeLists.txt') }}
+          # Keyed on the brew command itself, not CMakeLists.txt. Bottles are
+          # downloaded rather than built, so caching only helps while the
+          # formulae are unchanged.
+          key: ${{ runner.os }}-brew-v1
           restore-keys: ${{ runner.os }}-brew-
 
       - name: Install dependencies
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
         run: |
-          brew update
           # openssl@1.1 is deprecated and disabled, but runner images ship it
           # owning /opt/homebrew/bin/openssl. That blocks the openssl@3 link
           # pulled in below. `brew unlink` reports "0 symlinks removed" and
