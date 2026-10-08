@@ -1,5 +1,9 @@
 name: m1-full-ci
 
+concurrency:
+  group: m1-full-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [ main ]
@@ -22,6 +26,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Cache Homebrew downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/Homebrew
+          key: ${{ runner.os }}-brew-${{ hashFiles('CMakeLists.txt') }}
+          restore-keys: ${{ runner.os }}-brew-
+
       - name: Install dependencies
         run: |
           brew update
@@ -36,7 +47,7 @@ jobs:
              [ "$(readlink /opt/homebrew/bin/openssl)" = "/opt/homebrew/opt/openssl@1.1/bin/openssl" ]; then
             rm -f /opt/homebrew/bin/openssl
           fi
-          brew install cmake open-mpi opencv eigen nlohmann-json cpprestsdk boost googletest
+          brew install cmake open-mpi eigen nlohmann-json cpprestsdk boost googletest
 
       - name: Configure
         run: |
